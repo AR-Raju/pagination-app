@@ -8,18 +8,13 @@ import {
   TableCell,
   TableContainer,
   TableHead,
-  TablePagination,
   TableRow,
 } from "@material-ui/core";
+import { Pagination } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
-
-export interface Column {
-  id: "title" | "url" | "created_at" | "author";
-  label: string;
-  minWidth?: number;
-  align?: "right";
-}
+import { getPaginationData } from "../api/paginationApi";
+import { Column, InitPost } from "../interfaceModel/Model";
 
 const columns: Column[] = [
   { id: "title", label: "Title", minWidth: 170 },
@@ -28,18 +23,11 @@ const columns: Column[] = [
   { id: "author", label: "Author", minWidth: 100 },
 ];
 
-export interface InitPost {
-  title: string;
-  url: string;
-  created_at: Date;
-  author: string;
-}
-
 const Home = () => {
   const history = useHistory();
 
   const [pageNo, setPageNo] = useState<number>(0);
-  const [localPage, setLocalPage] = useState<number>(0);
+  const [localPage, setLocalPage] = useState<number>(1);
   const [totalElements, setTotalElements] = useState<number>(0);
   const [posts, setPosts] = useState<InitPost[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -57,20 +45,15 @@ const Home = () => {
     getPosts();
   }, [pageNo]);
 
-  const getPosts = async () => {
+  const getPosts = () => {
     try {
       setLoading(true);
 
-      const res = await fetch(
-        `https://hn.algolia.com/api/v1/search_by_date?tags=story&page=${pageNo}`
-      );
-      const data = await res.json();
-
-      const _posts = [...posts, ...data.hits];
-
-      setPosts(_posts);
-
-      setTotalElements(_posts.length);
+      getPaginationData(pageNo).then((data) => {
+        const _posts = [...posts, ...data.hits];
+        setPosts(_posts);
+        setTotalElements(_posts.length);
+      });
 
       setLoading(false);
     } catch (e) {
@@ -114,8 +97,8 @@ const Home = () => {
             <TableBody>
               {posts
                 .slice(
-                  rowsPerPage * localPage,
-                  rowsPerPage * localPage + rowsPerPage
+                  rowsPerPage * (localPage - 1),
+                  rowsPerPage * (localPage - 1) + rowsPerPage
                 )
                 .map((row) => (
                   <TableRow
@@ -138,15 +121,11 @@ const Home = () => {
           </Table>
         </TableContainer>
       )}
-      {posts.length > 20 && (
-        <TablePagination
-          component="div"
-          count={totalElements}
-          page={localPage}
-          onPageChange={handlePageChange}
-          rowsPerPage={rowsPerPage}
-        />
-      )}
+      <Pagination
+        count={totalElements / rowsPerPage}
+        page={localPage}
+        onChange={handlePageChange}
+      />
     </Container>
   );
 };
