@@ -45,16 +45,13 @@ const Home = () => {
     getPosts();
   }, [pageNo]);
 
-  const getPosts = () => {
+  const getPosts = async () => {
     try {
       setLoading(true);
-
-      getPaginationData(pageNo).then((data) => {
-        const _posts = [...posts, ...data.hits];
-        setPosts(_posts);
-        setTotalElements(_posts.length);
-      });
-
+      const data = await getPaginationData(pageNo);
+      const _posts = [...posts, ...data.hits];
+      setPosts(_posts);
+      setTotalElements(_posts.length);
       setLoading(false);
     } catch (e) {
       setLoading(false);

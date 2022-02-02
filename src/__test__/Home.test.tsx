@@ -1,7 +1,9 @@
 import React from "react";
-import { act, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import Home from "../components/Home";
 import { getPaginationData } from "../api/paginationApi";
+import { createMemoryHistory } from "history";
+import { Router } from "react-router-dom";
 
 describe("Home component testing", () => {
   test("should render <Home /> component", () => {
@@ -10,11 +12,9 @@ describe("Home component testing", () => {
     expect(linkElement).toBeInTheDocument();
   });
 
-  test("should load api data", async () => {
-    return await act(() =>
-      getPaginationData(1).then((data) => {
-        expect(data).toBeDefined();
-      })
-    );
+  test("should render api data", async () => {
+    return await getPaginationData(0).then((data) => {
+      expect(data).toBeDefined();
+    });
   });
 });
